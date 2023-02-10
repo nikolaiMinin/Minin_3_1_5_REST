@@ -11,11 +11,15 @@ public interface UserService {
 
     void updateUser(User user, long[] listRoles);
 
+    void update(User user);
+
     List<User> findAll();
 
     User getUserById(Long id);
 
     void deleteById(User user);
+
+    void deleteUser(Long userId);
 
     User findByUsername(String username);
 

@@ -36,8 +36,8 @@ public class DBInit {
         adminSet.add(roleUser);
         userSet.add(roleUser);
 
-        User user1 = new User("Leonardo", "DiCaprio", "11@11", 450, "user", "200", userSet);
-        User user2 = new User("Matthew", "McConaughey", "22@22", 550, "admin", "100", adminSet);
+        User user1 = new User("Leonardo", "DiCaprio", "leonardo@mail.ru", 100, "user", "200", userSet);
+        User user2 = new User("Matthew", "McConaughey", "matthew@mail.ru", 200, "admin", "100", adminSet);
 
         userService.svUser(user1);
         userService.svUser(user2);

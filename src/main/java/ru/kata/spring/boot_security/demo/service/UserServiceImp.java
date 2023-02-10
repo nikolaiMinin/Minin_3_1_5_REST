@@ -68,6 +68,14 @@ public class UserServiceImp implements UserDetailsService, UserService {
     }
 
     @Override
+    public void update(User user) {
+        if (!user.getPassword().equals(getUserById(user.getId()).getPassword())) {
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+        }
+        userRepository.saveAndFlush(user);
+    }
+
+    @Override
     public List<User> findAll() {
         return userRepository.findAll();
     }
@@ -87,6 +95,14 @@ public class UserServiceImp implements UserDetailsService, UserService {
     public void deleteById(User user) {
         userRepository.delete(user);
     }
+
+    @Override
+    public void deleteUser(Long userId) {
+        User user = getUserById(userId);
+        user.getRoles().clear();
+        userRepository.deleteById(userId);
+    }
+
 
     @Override
     public User findByUsername(String username) {
