@@ -1,127 +1,72 @@
 package ru.kata.spring.boot_security.demo.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
-
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import ru.kata.spring.boot_security.demo.model.Role;
 import ru.kata.spring.boot_security.demo.model.User;
-import ru.kata.spring.boot_security.demo.repository.RoleRepository;
 import ru.kata.spring.boot_security.demo.repository.UserRepository;
-
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
-@Service
-public class UserServiceImp implements UserDetailsService, UserService {
+@Service ("userServiceImp")
+public class UserServiceImp implements UserService {
+
     private final UserRepository userRepository;
-    private final RoleRepository roleRepository;
-    private final PasswordEncoder passwordEncoder;
-    private Set<Role> roles;
 
-    public void setRoles(Set<Role> roles) {
-        this.roles = roles;
-    }
+    private final PasswordEncoder bCryptPasswordEncoder;
 
     @Autowired
-    public UserServiceImp(UserRepository userRepository, RoleRepository roleRepository, @Lazy PasswordEncoder passwordEncoder) {
+    public UserServiceImp(UserRepository userRepository, @Lazy PasswordEncoder bCryptPasswordEncoder){
         this.userRepository = userRepository;
-        this.roleRepository = roleRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
-
-    @Transactional
-    @Override
-    public void saveUser(User user, long[] listRoles) {
-        Set<Role> rolesSet = new HashSet<>();
-        for (int i = 0; i < listRoles.length; i++) {
-            rolesSet.add(roleRepository.findById(listRoles[i]));
-        }
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-
-        user.setRoles(rolesSet);
-        userRepository.save(user);
-    }
-
-    @Transactional
-    @Override
-    public void updateUser(User user, long[] role_id) {
-        Set<Role> setOfRoles = new HashSet<>();
-
-        for (int i = 0; i < role_id.length; i++) {
-            setOfRoles.add(roleRepository.findById(role_id[i]));
-        }
-        //только сложный пароль
-        if (user.getPassword().startsWith("$2a$10$") && user.getPassword().length() == 60) {
-            user.setPassword(user.getPassword());
-        } else {
-            user.setPassword(passwordEncoder.encode(user.getPassword()));
-        }
-        user.setRoles(setOfRoles);
-        userRepository.save(user);
+        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
 
     @Override
-    public void update(User user) {
-        if (!user.getPassword().equals(getUserById(user.getId()).getPassword())) {
-            user.setPassword(passwordEncoder.encode(user.getPassword()));
-        }
-        userRepository.saveAndFlush(user);
+    public User add(User user) {
+        user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
+        return userRepository.save(user);
     }
 
     @Override
-    public List<User> findAll() {
+    public User update(User user, int id) {
+        User existingUser = userRepository.findById(id).orElseThrow();
+        existingUser.setName(user.getName());
+        existingUser.setLastName(user.getLastName());
+        existingUser.setAge(user.getAge());
+        existingUser.setEmail(user.getEmail());
+        existingUser.setRoles(user.getRoles());
+        return userRepository.save(existingUser);
+    }
+
+    @Override
+    public void delete(int id) {
+        userRepository.deleteById(id);
+    }
+
+    @Override
+    public List<User> getAllUsers() {
         return userRepository.findAll();
     }
 
     @Override
-    public User getUserById(Long id) {
-        return userRepository.findById(id).get();
+    public User getById(int id) {
+        return userRepository.findById(id).orElseThrow();
     }
 
     @Override
-    public List<Role> listRoles() {
-        return roleRepository.findAll();
-    }
-
-    @Transactional
-    @Override
-    public void deleteById(User user) {
-        userRepository.delete(user);
+    public User findByUsername(String email) {
+        return userRepository.getUserByEmail(email);
     }
 
     @Override
-    public void deleteUser(Long userId) {
-        User user = getUserById(userId);
-        user.getRoles().clear();
-        userRepository.deleteById(userId);
-    }
-
-
-    @Override
-    public User findByUsername(String username) {
-        return userRepository.findByUsername(username);
-    }
-
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByUsername(username);
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        User user = userRepository.getUserByEmail(email);
         if (user == null) {
-            throw new UsernameNotFoundException("User is not found:" + " " + username);
+            throw new UsernameNotFoundException(String.format("Пользователь с email = " + email + " не найден", email));
         }
         return user;
-    }
-
-    @Override
-    public void svUser(User user) {
-        user.setUsername(user.getUsername());
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        userRepository.save(user);
     }
 }

@@ -1,30 +1,35 @@
 package ru.kata.spring.boot_security.demo.service;
 
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.kata.spring.boot_security.demo.model.Role;
 import ru.kata.spring.boot_security.demo.repository.RoleRepository;
 
-import java.util.List;
-
+import java.util.HashSet;
+import java.util.Set;
 
 @Service
-public class RoleServiceImp implements RoleService {
-    private RoleRepository roleRepository;
+@AllArgsConstructor
+public class RoleServiceImp implements RoleService{
 
-    public RoleServiceImp(RoleRepository roleRepository) {
-        this.roleRepository = roleRepository;
+    private final RoleRepository roleRepository;
+
+    @Override
+    public void add(Role role) {
+        roleRepository.save(role);
     }
 
     @Override
-    public Role findById(long role_id) {
-        return roleRepository.findById(role_id);
-    }
-    public Role addRole(Role role) {
-        return roleRepository.save(role);
+    public Role getById(int id) {
+        return roleRepository.getById(id);
     }
 
     @Override
-    public List<Role> findAllRoles() {
-        return roleRepository.findAll();
+    public Set<Role> getRoles(int [] ides) {
+        Set <Role> roles = new HashSet<>();
+        for (int i = 0; i < ides.length; i++) {
+            roles.add(roleRepository.getById(ides[i]));
+        }
+        return roles;
     }
 }
