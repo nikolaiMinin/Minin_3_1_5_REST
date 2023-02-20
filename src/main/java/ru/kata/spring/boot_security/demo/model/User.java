@@ -1,68 +1,65 @@
 package ru.kata.spring.boot_security.demo.model;
 
-import lombok.*;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+
 import javax.persistence.*;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @Entity
 @Table(name = "users")
-@Getter
-@Setter
-@NoArgsConstructor
-
 public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    private int id;
-
-    @Column(name = "name")
-    private String name;
-
-    @Column(name = "lastName")
+    private Long id;
+    private String email;
+    private String password;
+    private String username;
+    private Long age;
     private String lastName;
 
-    @Column(name="age")
-    private int age;
 
-    @Column(name = "email", unique = true, length = 100)
-    private String email;
 
-    @Column(name = "password")
-    private String password;
-
-    @ManyToMany
-    @Fetch(FetchMode.JOIN)
-    @JoinTable(name = "users_roles",
+    @ManyToMany(cascade = {CascadeType.MERGE})
+    @JoinTable(
+            name = "users_roles",
             joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id"))
+            inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
+    private List<Role> roles = new ArrayList<>();
 
-    private Set<Role> roles = new HashSet<>();
+    public User() {
+    }
 
-    public User(String name, String lastName, int age, String email, String password, Set<Role> roles) {
-        this.name = name;
-        this.lastName = lastName;
-        this.age = age;
+
+
+    public User(String email, String password, String username, Long age, String lastName) {
         this.email = email;
         this.password = password;
-        this.roles = roles;
+        this.username = username;
+        this.age = age;
+        this.lastName = lastName;
+//        this.roles = roles;
+    }
+
+    public void addRole(Role role) {
+        this.roles.add(role);
+    }
+
+    @Override
+    public String getPassword() {
+        return password;
     }
 
     @Override
     public String getUsername() {
-        return email;
+        return username;
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return getRoles();
+        return roles;
     }
 
     @Override
@@ -85,4 +82,51 @@ public class User implements UserDetails {
         return true;
     }
 
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public Long getAge() {
+        return age;
+    }
+
+    public void setAge(Long age) {
+        this.age = age;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public List<Role> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(List<Role> roles) {
+        this.roles = roles;
+    }
 }

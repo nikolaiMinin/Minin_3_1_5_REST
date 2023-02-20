@@ -1,33 +1,45 @@
 package ru.kata.spring.boot_security.demo.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import org.springframework.security.core.GrantedAuthority;
 
+
+import org.springframework.security.core.GrantedAuthority;
 import javax.persistence.*;
-import java.util.Set;
+
 
 @Entity
 @Table(name = "roles")
-@Getter
-@Setter
-
 public class Role implements GrantedAuthority {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Long id;
 
-    @Column(name = "name", unique = true, length = 100)
     private String name;
 
-    public int getId() {
+    public Role() {
+    }
+
+    public Role(String name) {
+        this.name = name;
+    }
+
+    public Role(Long id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+    @Override
+    public String getAuthority() {
+        return name;
+    }
+    @Override
+    public String toString() {
+        return this.name;
+    }
+
+    public Long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -38,22 +50,29 @@ public class Role implements GrantedAuthority {
     public void setName(String name) {
         this.name = name;
     }
-    public Role(){}
-    public Role(int id, String name){
-        this.id =id;
-        this.name = name;
-    }
-    public Role(String name){
-        this.name = name;
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((id == null) ? 0 : id.hashCode());
+        return result;
     }
 
     @Override
-    public String getAuthority() {
-        return getName();
-    }
-
-    @Override
-    public String toString() {
-        return name;
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        Role other = (Role) obj;
+        if (id == null) {
+            if (other.id != null)
+                return false;
+        } else if (!id.equals(other.id))
+            return false;
+        return true;
     }
 }
